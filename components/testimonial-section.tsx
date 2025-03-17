@@ -202,7 +202,7 @@ export default function TeamMembersSection() {
           className="relative"
         >
           {/* Card container with proper height for all devices */}
-          <div className="flex justify-center overflow-hidden relative h-[600px] xs:h-[620px] sm:h-[550px] md:h-[500px] lg:h-[550px]">
+          <div className="flex justify-center overflow-hidden relative h-[601px] xs:h-[620px] sm:h-[550px] md:h-[500px] lg:h-[550px]">
             <AnimatePresence custom={direction} initial={false}>
               <motion.div
                 key={activeIndex}
