@@ -106,104 +106,134 @@ export function ServiceCard({
   const colorScheme = COLOR_SCHEMES[index % COLOR_SCHEMES.length];
   const { bgColor, glowColor, borderColor, accentColor, buttonColor } = colorScheme;
 
+  // Function to detect if device has hover capability
+  const isDesktop = () => {
+    return typeof window !== 'undefined' && window.matchMedia("(hover: hover)").matches;
+  };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !isDesktop()) return;
 
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    x.set(e.clientX - centerX);
-    y.set(e.clientY - centerY);
+    // Apply a multiplier for smoother movement like in FeatureCard
+    x.set((e.clientX - centerX) * 0.8);
+    y.set((e.clientY - centerY) * 0.8);
   };
 
   const handleMouseLeave = () => {
     x.set(0);
     y.set(0);
-    setActive(null);
+    // Only reset active state on desktop devices
+    if (isDesktop()) {
+      setActive(null);
+    }
+  };
+
+  // Handle click/tap for both desktop and mobile
+  const handleClick = () => {
+    // Toggle active state on click/tap
+    setActive(isActive ? null : index);
   };
 
   return (
     <motion.div
       ref={cardRef}
       variants={variants}
+      transition={{
+        delay: index * 0.1, // Staggered animation like in FeatureCard
+        duration: 0.7,
+        ease: [0.33, 1, 0.68, 1],
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onHoverStart={() => setActive(index)}
-      className="cursor-hover-trigger"
+      onHoverStart={() => {
+        // Only set active on hover for desktop devices
+        if (isDesktop()) {
+          setActive(index);
+        }
+      }}
+      onClick={handleClick} // Handle click for both desktop and mobile
+      style={{ perspective: 1000, transformStyle: "preserve-3d" }}
+      className="cursor-pointer" // Better indicator for mobile
     >
       <motion.div
         style={{
           rotateX,
           rotateY,
           transformStyle: "preserve-3d",
-          perspective: 1000,
         }}
-        transition={{ duration: 0.3 }}
-        whileHover={{ z: 10 }}
+        transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+        className="h-full"
       >
-        <Card className="border-white/10 backdrop-blur-sm transition-all duration-300 h-full flex flex-col overflow-hidden relative">
-          {/* Dynamic background that changes on hover */}
+        <Card className="bg-black/50 border-white/10 backdrop-blur-sm transition-all duration-300 h-full flex flex-col overflow-hidden relative">
+          {/* Dynamic background that changes on hover/active */}
           <motion.div 
             className="absolute inset-0 bg-black/50 z-0"
             animate={{ 
               opacity: isActive ? 0 : 1 
             }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
           />
           
-          {/* Gradient background that appears on hover */}
+          {/* Gradient background that appears on hover/active - similar to FeatureCard */}
           <motion.div 
             className={`absolute inset-0 bg-gradient-to-br ${bgColor} z-0`}
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ 
-              opacity: isActive ? 1 : 0 
+              opacity: isActive ? 0.15 : 0,
+              scale: isActive ? 1 : 0.95
             }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
           />
 
-          {/* Glow effect on hover */}
+          {/* Glow effect on hover/active */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-5"
             animate={{ opacity: isActive ? 1 : 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
           />
 
-          {/* Card border highlight on hover */}
+          {/* Card border highlight on hover/active */}
           <motion.div
             className={`absolute inset-0 border-2 rounded-lg ${borderColor} z-5`}
             initial={{ opacity: 0 }}
             animate={{ opacity: isActive ? 1 : 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
           />
 
           <CardHeader className="pb-2 relative z-10">
             <motion.div
-              className={`mb-4 p-3 rounded-full w-fit ${isActive ? glowColor : "bg-white/10"}`}
+              className={`mb-4 p-3 rounded-full w-fit bg-black/50 relative overflow-hidden ${isActive ? glowColor : ""}`}
               animate={{
                 scale: isActive ? 1.1 : 1,
                 rotate: isActive ? [0, 5, -5, 0] : 0,
               }}
               transition={{
                 duration: 0.5,
+                ease: [0.33, 1, 0.68, 1],
                 rotate: {
                   repeat: isActive ? Number.POSITIVE_INFINITY : 0,
                   repeatType: "loop",
                   duration: 2,
+                  ease: "easeInOut",
                 },
               }}
             >
               {service.icon}
               <motion.div
-                className="absolute inset-0 bg-white/20 rounded-full"
+                className={`absolute inset-0 ${glowColor} rounded-full`}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{
                   scale: isActive ? [1, 1.5, 1] : 0,
                   opacity: isActive ? [0.5, 0, 0] : 0,
                 }}
                 transition={{
-                  duration: 1,
+                  duration: 1.5,
                   repeat: isActive ? Number.POSITIVE_INFINITY : 0,
+                  ease: "easeInOut",
                 }}
               />
             </motion.div>
@@ -232,11 +262,12 @@ export function ServiceCard({
             </motion.button>
           </CardFooter>
 
+          {/* Animated border - using the smoother animation from FeatureCard */}
           <motion.div
             className={`absolute bottom-0 left-0 h-1 ${accentColor}`}
             initial={{ width: "0%" }}
             animate={{ width: isActive ? "100%" : "0%" }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
           />
         </Card>
       </motion.div>
