@@ -238,7 +238,6 @@ export default function CustomCursor({ containerRef }: CustomCursorProps) {
           pointer-events: none;
           border-radius: 50%;
           z-index: 9999;
-          background-color: white;
           box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
 
