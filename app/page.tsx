@@ -36,7 +36,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  return (
+ return (
     <ThemeProvider attribute="class" defaultTheme="dark">
       <main
         ref={containerRef}
@@ -64,7 +64,7 @@ export default function Home() {
             <TeamMembersSection />
             <FaqSection />
             <Footer />
-            <FloatingChatbot />
+            <FloatingChatbot />  
           </>
         )}
       </main>

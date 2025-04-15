@@ -32,6 +32,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+      
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -39,6 +40,9 @@ const config: Config = {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
+        },
+        fontFamily: {
+          roboto: ['Roboto', 'sans-serif'],
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
@@ -57,6 +61,9 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        'custom': '0px 3px 19px 3px #D6EEFA',
       },
       keyframes: {
         "accordion-down": {

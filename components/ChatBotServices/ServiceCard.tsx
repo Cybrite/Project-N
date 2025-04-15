@@ -14,7 +14,8 @@ import {
 } from "@/sections/ChatBotServices/chatbot-services";
 import { SERVICES} from "../../contents/chatbot-services"
 import { ServiceCardProps } from "../../types/service";
-
+import Link from "next/link"
+import type { Route } from 'next';
 export const GradientBackground = () => (
   <div className="absolute inset-0 z-0">
     <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-radial from-gray-800/20 to-transparent opacity-30" />
@@ -267,8 +268,10 @@ export function ServiceCard({
             <motion.button className="w-full">
               <Button
                 className={`w-full bg-gradient-to-r ${service.color || buttonColor} hover:opacity-90 hover:text-black text-white border border-white/20 group overflow-hidden`}
-              >
+              > 
+                <Link  href ={service.href as Route}>
                 <span className="relative z-10 hover:text-black text-white">Get Started</span>
+                </Link>
                 <motion.span
                   className="absolute inset-0 bg-white/10"
                   initial={{ x: "-100%" }}
