@@ -12,6 +12,7 @@ export const SERVICES = [
       "An intelligent mental wellness and lifestyle coach, designed to help you manage stress, enhance focus, and cultivate inner peace through mindfulness and hobby-based therapy.",
     icon: "Brain", // Store icon name as a string
     color: "from-white/10 to-white/5",
+    
   },
   {
     title: "GoldenCare",
