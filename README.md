@@ -1,23 +1,38 @@
 # Project-N
 
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
 Welcome to **Project-N**! This project is designed to be a comprehensive platform that leverages the power of modern web technologies to provide seamless user experiences and interactive features.
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Features](#features)
 - [Technologies Used](#technologies-used)
-  - [Frontend](#frontend)
-  - [Backend](#backend)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
+- [Usage](#usage)
 - [Contributing](#contributing)
-
+- [License](#license)
+- [Contact](#contact)
 
 ## Project Overview
 
 **Project-N** is a modern web application aimed at delivering a rich and interactive user experience. It features multiple sections, including a team page, a chatbot service, and various feature sections, each with dynamic content and responsive design.
 
 This project is built with **Next.js** for the frontend, providing a seamless React-based user experience. It also utilizes **TailwindCSS** for styling and **TypeScript** for type safety.
+
+## Features
+
+- **Interactive UI Components** - Fully responsive design with modern UI elements
+- **Team Page** - Showcase team members and their expertise
+- **Chatbot Services** - Interactive chatbot functionality
+- **Dark/Light Mode Toggle** - Customizable theme preferences
+- **Responsive Design** - Optimized for all screen sizes
+- **TypeScript Integration** - Type-safe development environment
 
 ## Technologies Used
 
@@ -37,6 +52,23 @@ The backend for this project is planned for future development and will include 
 ## Project Structure
 
 The directory structure of **Project-N** is organized to keep code modular, clean, and maintainable. Below is an overview of the project structure:
+
+```bash
+├── app                           # Next.js app directory
+├── components                    # UI components organized by section/function
+├── contents                      # Content data for various sections
+├── hooks                         # Custom React hooks
+├── lib                           # Utility functions and helpers
+├── public                        # Static assets like images and icons
+├── sections                      # Page sections organized by feature
+├── .env.example                  # Example environment variables
+└── config files                  # Various configuration files
+```
+
+For a more detailed breakdown of the project structure, see the full directory tree in the expanded section below.
+
+<details>
+<summary>Full Directory Structure (Click to expand)</summary>
 
 ```bash
 ├── app
@@ -104,6 +136,9 @@ The directory structure of **Project-N** is organized to keep code modular, clea
 ├── tailwind.config.ts            # TailwindCSS configuration for design system
 ├── tsconfig.json                 # TypeScript configuration file
 ```
+
+</details>
+
 ## Installation
 
 Follow these steps to set up **Project-N** locally.
@@ -113,8 +148,7 @@ Follow these steps to set up **Project-N** locally.
 Ensure you have the following installed on your machine:
 
 - **Node.js** (v14 or higher)
-- **npm** (v6 or higher)
-- **Yarn** (optional)
+- **npm** (v6 or higher) or **Yarn** (optional)
 
 ### Steps to Set Up
 
@@ -123,56 +157,71 @@ Ensure you have the following installed on your machine:
    git clone https://github.com/Cybrite/Project-N.git
    cd Project-N
    ```
-   
-2. **Install the dependencies:**
-   Using npm:
-   ```bash
-    npm install
-   ```
-   Or using Yarn:
-    ```bash
-   yarn install
-    ```
-3.**Set up environment variables:**   
-    Create a .env file based on .env.example and set your required environment variables.
+2. **Install the dependencies**:
 
-4. Run the development server: Using npm:
-    ```bash
-    npm run dev
-    ```
-    Or using Yarn:
-     ```bash
-     yarn dev
-      ```
- 5. Open the application in your browser at http://localhost:3000.
+   Using npm:
+
+   ```bash
+   npm install
+   ```
+
+   Or using Yarn:
+
+   ```bash
+   yarn install
+   ```
+
+3. **Set up environment variables**:
+
+   Create a `.env` file based on `.env.example` and set your required environment variables.
+
+4. **Run the development server**:
+
+   Using npm:
+
+   ```bash
+   npm run dev
+   ```
+
+   Or using Yarn:
+
+   ```bash
+   yarn dev
+   ```
+
+5. **Open the application** in your browser at [http://localhost:3000](http://localhost:3000).
+
+## Usage
+
+After installation, you can:
+
+- Explore the various sections of the application
+- Toggle between light and dark modes using the theme toggle
+- Interact with the chatbot services
+- View the team page and other features
 
 ## Contributing
 
-We love contributions from the community! If you'd like to contribute to Project-N, follow these steps:
+We love contributions from the community! Please refer to our detailed [CONTRIBUTING.md](CONTRIBUTING.md) guide for steps on how to contribute to this project.
 
-1. **Fork the repository on GitHub and clone it to your local machine.**
-2. **Create a new branch:**
-    ```bash
-    git checkout -b your-branch-name
-    ```
-3. **Make your changes and write tests where applicable.**
-4. **Commit your changes:**
-    ```bash
-    git add .
-    git commit -m "Your commit message"
-    ```
-5. **Push to your fork:**
-    ```bash
-    git push origin your-branch-name
-    ```
-6. **Create a pull request from your fork to the main branch of the repository.**
+The contribution process involves:
 
-## Coding Guidelines
+1. Forking the repository
+2. Creating a feature branch
+3. Making your changes
+4. Submitting a pull request
 
-- **Follow the ESLint rules for code formatting.**
-- **Use TypeScript for type safety and consistency.**
-- **Add or update tests if necessary.**
-- **Write clear and concise commit messages.**
+For more detailed instructions, please see the [CONTRIBUTING.md](CONTRIBUTING.md) document.
 
+## License
 
-     
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+- **GitHub Repository**: [https://github.com/Cybrite/Project-N](https://github.com/Cybrite/Project-N)
+- **Issues and Feature Requests**: [GitHub Issues](https://github.com/Cybrite/Project-N/issues)
+
+---
+
+Built with ❤️ by the NirveonX team

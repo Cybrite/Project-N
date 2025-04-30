@@ -20,6 +20,7 @@ import { useScroll } from "framer-motion";
 import About from "@/components/About/About";
 import TeamMembersSection from "@/sections/Pioneer/pioneer";
 import InvestorSection from "@/sections/Patron/Investors";
+import Fitarth from "@/components/fitronx-Card";
 
 export default function Home() {
   const [introComplete, setIntroComplete] = useState(false);
@@ -46,7 +47,7 @@ export default function Home() {
           containerRef={containerRef as React.RefObject<HTMLDivElement>}
         />
         <ScrollProgress scrollYProgress={scrollYProgress} />
-        <NoiseTexture />
+        {/* <NoiseTexture /> */}
         <ParticlesBackground />
         <VerticalMenuIndicator />
 
@@ -57,6 +58,7 @@ export default function Home() {
             <Navbar scrolled={scrolled} />
             <HeroSection />
             <About />
+            <Fitarth/>
             <MarqueeText />
             <FeaturesSection />
             <ChatbotServices />

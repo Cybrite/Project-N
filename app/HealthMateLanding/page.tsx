@@ -17,7 +17,7 @@ export default function HealthMate() {
       {/* Background image with pills */}
       <div className="absolute right-0 top-0 h-full w-full z-0 opacity-80">
         <Image
-          src="/pills-dark-environment.jpg"
+          src="/image 52.png"
           alt="Pills background"
           width={600}
           height={900}
@@ -64,10 +64,10 @@ export default function HealthMate() {
          }}>
 
 
-          <FeatureCard title="Check Vital Signs" imagePath="/placeholder.svg?height=150&width=150" />
-          <FeatureCard title="Monitor Health Trends" imagePath="/placeholder.svg?height=150&width=150" />
-          <FeatureCard title="Receive Health Alerts" imagePath="/placeholder.svg?height=150&width=150" />
-          <FeatureCard title="Upload Health Reports" imagePath="/placeholder.svg?height=150&width=150" />
+          <FeatureCard title="Check Vital Signs" imagePath="/vital.svg" />
+          <FeatureCard title="Monitor Health Trends" imagePath="/Monitor_health.svg" />
+          <FeatureCard title="Receive Health Alerts" imagePath="/healthcare-alert.svg" />
+          <FeatureCard title="Upload Health Reports" imagePath="/doctor-ext.svg" />
         </div>
       </div>
     </div>
@@ -81,8 +81,8 @@ function FeatureCard({ title, imagePath }: { title: string; imagePath: string })
     <div className="bg-[#1f2937] bg-opacity-80 rounded-lg p-6 flex flex-col items-center">
       <div className="relative mb-4">
         <div className="absolute inset-0 bg-blue-500 rounded-full blur-md opacity-30"></div>
-        <div className="relative rounded-full overflow-hidden h-24 w-24 border-2 border-white border-opacity-20  shadow-custom">
-          <Image src={imagePath || "/placeholder.svg"} alt={title} width={150} height={150} className="object-cover" />
+        <div className="relative  overflow-hidden w-[130px] h-[135px] rounded-[135px] " >
+          <Image src={imagePath || "/placeholder.svg"} alt={title} width={130} height={135} className="object-cover"  />
         </div>
       </div>
       <h3 className="text-white text-lg font-medium mb-4">{title}</h3>

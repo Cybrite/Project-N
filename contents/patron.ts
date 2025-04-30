@@ -8,6 +8,13 @@ export const investors: Investor[] = [
         "https://res.cloudinary.com/dqqyuvg1v/image/upload/v1742210980/nikhil_phqtqs.png",
       title: "Advisory Board Member",
     },
+    {
+      id: 2,
+      name: "Vishal Kavali",
+      image:
+        "/Vishal_sir.jpg",
+      title: "Head of Product & Community",
+    },
   ];
 
  export const contactTeam: ContactPerson[] = [
