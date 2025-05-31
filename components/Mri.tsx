@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Menu, X, MessageSquarePlus, Settings, LogOut, HeartPulse, Trash2, Minimize2, Maximize2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type Message = {
   id: string;
@@ -30,38 +31,21 @@ export default function Mri() {
   const apiUrl = "https://mri-662622027382.europe-west1.run.app";
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [imageMinimized, setImageMinimized] = useState<boolean>(false);
-  const [resultsMinimized, setResultsMinimized] = useState<boolean>(false);
+  const [isImageMinimized, setIsImageMinimized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [ctData, setCTData] = useState<CTAnalysisData | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [analysisComplete, setAnalysisComplete] = useState<boolean>(false);
-  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
-
-  // Initialize with welcome message and load chat history
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [isAnalysisMinimized, setIsAnalysisMinimized] = useState<boolean>(false);
+  const router = useRouter();
+  
+  // Initialize with welcome message
   useEffect(() => {
-    const storedHistory = JSON.parse('[]');
-    try {
-      const stored = storedHistory;
-      if (stored && stored.length > 0) {
-        const historyWithDates = stored.map((item: any) => ({
-          ...item,
-          timestamp: new Date(item.timestamp),
-          messages: item.messages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp)
-          }))
-        }));
-        setChatHistory(historyWithDates);
-      }
-    } catch (error) {
-      console.error('Error parsing chat history:', error);
-    }
-
     setMessages([{
       id: generateId(),
       text: initialMessage,
@@ -70,30 +54,10 @@ export default function Mri() {
     }]);
   }, [initialMessage]);
 
-  // Auto-scroll to bottom of chat when new messages arrive
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  // Save chat history when it changes
-  useEffect(() => {
-    if (chatHistory.length > 0) {
-      // localStorage.setItem('mriChatHistory', JSON.stringify(chatHistory));
-    }
-  }, [chatHistory]);
-
-  const generateId = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  const handleLogout = () => {
-    console.log('Logout clicked');
-  };
-
+  const toggleAnalysisMinimize = () => setIsAnalysisMinimized(!isAnalysisMinimized);
+  const toggleImageMinimize = () => setIsImageMinimized(!isImageMinimized);
+  
   const handleNewChat = () => {
     if (messages.length > 1) {
       const firstUserMessage = messages.find(msg => msg.sender === 'user');
@@ -130,9 +94,23 @@ export default function Mri() {
     setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
   };
 
+  const handleLogout = () => {
+    router.push("/HealthMatesecondLanding");
+  };
+
   const formatDate = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const generateId = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  };
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -143,25 +121,17 @@ export default function Mri() {
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
-      setImageMinimized(false);
+      setIsImageMinimized(false);
     }
   };
 
   const removeImage = () => {
     setSelectedImage(null);
     setPreviewImage(null);
-    setImageMinimized(false);
+    setIsImageMinimized(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  const toggleImageMinimize = () => {
-    setImageMinimized(!imageMinimized);
-  };
-
-  const toggleResultsMinimize = () => {
-    setResultsMinimized(!resultsMinimized);
   };
 
   const handleUploadCT = async () => {
@@ -242,14 +212,13 @@ export default function Mri() {
         msg.id === initialResultMessage.id ? finalResultMessage : msg
       ));
       
-      // Store explanation in ctData
       setCTData(prev => prev ? { ...prev, explanation: explanationData.explanation } : prev);
       
       setAnalysisComplete(true);
       
       setSelectedImage(null);
       setPreviewImage(null);
-      setImageMinimized(false);
+      setIsImageMinimized(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -260,7 +229,7 @@ export default function Mri() {
       
       const errorMessage: Message = {
         id: generateId(),
-        text: "Sorry, there was an error analyzing your MRI scan. Please try again later.",
+        text: `Sorry, there was an error analyzing your MRI scan: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again later.`,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -274,7 +243,7 @@ export default function Mri() {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
     
-    if (!analysisComplete) {
+    if (!analysisComplete || !sessionId) {
       const promptMessage: Message = {
         id: generateId(),
         text: "Please upload a MRI image first before asking questions. I need to analyze an image to provide meaningful discussion.",
@@ -325,7 +294,7 @@ export default function Mri() {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
         id: generateId(),
-        text: "Sorry, I couldn't process your message. Please try again later.",
+        text: `Sorry, I couldn't process your message: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again later.`,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -339,53 +308,59 @@ export default function Mri() {
   const renderAnalysisResults = () => {
     if (!ctData) return null;
     
+    const confidencePercent = ctData.confidence.toFixed(1) + '%';
+    
     return (
-      <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 rounded-2xl mt-4 mb-6 border border-gray-600 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-blue-400 font-bold text-lg flex items-center gap-2">
-            <HeartPulse className="w-5 h-5" />
-            MRI Analysis Results
-          </h3>
-          <button 
-            onClick={toggleResultsMinimize}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-600/50 rounded-lg transition-all"
-            title={resultsMinimized ? "Maximize results" : "Minimize results"}
+      <div className="bg-gray-800 rounded-lg mt-4 mb-4 overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <h3 className="text-blue-400 font-bold">MRI Analysis Results</h3>
+          <button
+            onClick={toggleAnalysisMinimize}
+            className="text-gray-400 hover:text-white transition-colors"
+            title={isAnalysisMinimized ? "Expand results" : "Minimize results"}
           >
-            {resultsMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+            {isAnalysisMinimized ? (
+              <Maximize2 className="w-5 h-5" />
+            ) : (
+              <Minimize2 className="w-5 h-5" />
+            )}
           </button>
         </div>
-
-        {resultsMinimized ? (
-          <div className="p-3 bg-gray-900/50 rounded-lg">
-            <p className="text-gray-400 text-sm">
-              Analysis results minimized - {ctData.classification} ({ctData.confidence.toFixed(1)}% confidence)
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
-                <span className="text-gray-300 font-medium">Condition:</span>
-                <span className="text-blue-300 font-bold">{ctData.classification}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
-                <span className="text-gray-300 font-medium">Confidence:</span>
-                <span className="text-green-300 font-bold">{ctData.confidence.toFixed(1)}%</span>
-              </div>
-              <div className="w-full bg-gray-600 rounded-full h-4">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-500" 
-                  style={{ width: `${ctData.confidence}%` }}
-                ></div>
-              </div>
+        
+        {!isAnalysisMinimized && (
+          <div className="p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300 font-medium">Condition:</span>
+              <span className="text-blue-300 font-bold">{ctData.classification}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300 font-medium">Confidence:</span>
+              <span className="text-green-300 font-bold">{confidencePercent}</span>
+            </div>
+            <div className="w-full bg-gray-600 rounded-full h-3">
+              <div 
+                className="bg-blue-500 h-3 rounded-full transition-all duration-500" 
+                style={{ width: `${ctData.confidence}%` }}
+              ></div>
             </div>
             {ctData.explanation && (
-              <div className="mt-4 p-3 bg-gray-900/50 rounded-lg">
-                <h4 className="text-gray-300 text-sm mb-2 font-medium">Explanation:</h4>
-                <p className="text-gray-200 text-sm leading-relaxed">{ctData.explanation}</p>
+              <div className="mt-2">
+                <span className="text-gray-300 font-medium text-sm">Explanation:</span>
+                <p className="text-gray-200 text-sm mt-1">{ctData.explanation}</p>
               </div>
             )}
-          </>
+          </div>
+        )}
+        
+        {isAnalysisMinimized && (
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-300">
+                Condition: <span className="text-blue-300 font-bold">{ctData.classification}</span>
+              </span>
+              <span className="text-sm text-green-300 font-bold">{confidencePercent}</span>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -403,8 +378,7 @@ export default function Mri() {
     setAnalysisComplete(false);
     setSelectedImage(null);
     setPreviewImage(null);
-    setImageMinimized(false);
-    setResultsMinimized(false);
+    setIsImageMinimized(false);
     setInputValue('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -412,13 +386,14 @@ export default function Mri() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col">
+
       <button
         onClick={toggleSidebar}
-        className={`fixed z-50 p-3 rounded-xl transition-all duration-300 shadow-lg ${
+        className={`fixed z-50 p-2 rounded-full transition-all ${
           isOpen
-            ? "left-56 top-6 bg-gray-700 hover:bg-gray-600 border border-gray-500"
-            : "left-6 top-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+            ? "left-56 top-6 bg-gray-700/50"
+            : "left-6 top-6 bg-indigo-600"
         }`}
         aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
@@ -430,38 +405,33 @@ export default function Mri() {
       </button>
 
       <div
-        className={`fixed h-screen w-72 bg-gray-800/90 backdrop-blur-xl border-r border-gray-700/50 flex flex-col z-40 transition-all duration-300 shadow-2xl ${
+        className={`fixed h-screen w-72 bg-white/10 backdrop-blur-lg border-r border-gray-700/20 flex flex-col z-40 transition-all duration-300 ${
           isOpen ? "left-0" : "-left-full"
         }`}
       >
-        <div className="flex flex-row p-6 gap-3 border-b border-gray-700/30">
-          <div className="p-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl">
-            <HeartPulse className="text-white w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="font-bold text-xl text-white">Healthmate</h1>
-            <p className="text-gray-400 text-sm">MRI Analysis AI</p>
-          </div>
+        <div className="flex flex-row p-6 gap-2 border-b border-gray-700/10">
+          <HeartPulse className="text-indigo-600 w-10 h-10" />
+          <h1 className="font-semibold text-lg text-white">Healthmate</h1>
         </div>
 
         <div className="flex-1 flex flex-col justify-between p-4">
-          <div className="space-y-2">
+          <div className="space-y-1">
             <button 
               onClick={handleNewChat}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
             >
               <MessageSquarePlus className="w-5 h-5" />
               <span>New Chat</span>
             </button>
 
-            <div className="mt-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">Recent Chats</h3>
+            <div className="mt-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Recent Chats</h3>
               <div className="space-y-1 max-h-[50vh] overflow-y-auto">
                 {chatHistory.map(chat => (
                   <div 
                     key={chat.id}
                     onClick={() => loadChat(chat.id)}
-                    className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-white/10 cursor-pointer group"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/5 cursor-pointer group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{chat.title}</p>
@@ -469,7 +439,7 @@ export default function Mri() {
                     </div>
                     <button 
                       onClick={(e) => deleteChat(chat.id, e)}
-                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-1 rounded-lg hover:bg-red-500/20"
+                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-1"
                       aria-label="Delete chat"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -483,14 +453,14 @@ export default function Mri() {
             </div>
           </div>
 
-          <div className="space-y-1 border-t border-gray-700/30 pt-4">
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200">
+          <div className="space-y-1">
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors">
               <Settings className="w-5 h-5" />
               <span>Settings</span>
             </button>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
@@ -501,58 +471,58 @@ export default function Mri() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
+          className="fixed inset-0 bg-black/30 z-30"
           onClick={toggleSidebar}
         />
       )}
-      
-      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto p-4 rounded-lg my-4">
+
+      <main className="flex-1 flex flex-col max-w-6xl mx-auto w-full p-4 rounded-lg my-4">
         {/* Header */}
-        <div className="text-center mb-6 pb-4">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">Healthmate</h1>
-          <div className="inline-flex items-center bg-gray-800/50 backdrop-blur-sm rounded-full px-4 py-2 border border-green-500/50 shadow-lg">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-            <span className="text-sm text-green-400 font-medium">Online</span>
+        <div className="text-center mb-4 pb-4">
+          <h1 className="text-4xl font-bold text-blue-500 mb-2">Healthmate</h1>
+          <div className="inline-flex items-center bg-black rounded-full px-3 py-1 border border-green-500">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            <span className="text-sm text-green-500">Online</span>
           </div>
         </div>
 
         {/* Analysis Status */}
         {!analysisComplete && (
-          <div className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border border-yellow-600/50 rounded-2xl p-4 mb-6 backdrop-blur-sm">
+          <div className="bg-yellow-900 border border-yellow-600 rounded-lg p-3 mb-4">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
               </svg>
-              <span className="text-yellow-200 font-medium">Please upload a MRI scan image to begin analysis</span>
+              <span className="text-yellow-200 text-sm">Please upload a MRI scan image to begin analysis</span>
             </div>
           </div>
         )}
 
-        {/* Chat Area - Made wider */}
-        <div ref={chatContainerRef} className="flex-1 mb-4 overflow-y-auto min-h-[60vh] max-h-[60vh] px-2">
+        {/* Chat Area */}
+        <div ref={chatContainerRef} className="flex-1 mb-4 overflow-y-auto max-h-[60vh] px-2">
           <div className="flex flex-col space-y-4">
             {messages.map((message) => (
               <div 
                 key={message.id} 
                 className={`${
                   message.sender === 'user' 
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white self-end rounded-2xl rounded-br-lg shadow-lg max-w-[70%]' 
-                    : 'bg-gradient-to-r from-gray-700 to-gray-600 text-white self-start rounded-2xl rounded-bl-lg shadow-lg max-w-[85%]'
-                } p-4 backdrop-blur-sm border border-white/10`}
+                    ? 'bg-blue-800 text-white self-end rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
+                    : 'bg-blue-600 text-white self-start rounded-tr-lg rounded-br-lg rounded-bl-lg'
+                } p-3 max-w-[85%] shadow`}
               >
-                <p className="whitespace-pre-line leading-relaxed">{message.text}</p>
+                <p className="whitespace-pre-line">{message.text}</p>
                 {message.image && (
                   <img 
                     src={message.image} 
-                    alt="User uploaded" 
-                    className="mt-3 max-h-64 rounded-xl border border-white/20" 
+                    alt="MRI scan" 
+                    className="mt-2 max-h-64 rounded-lg border border-gray-300" 
                   />
                 )}
               </div>
             ))}
             
             {isLoading && (
-              <div className="bg-gradient-to-r from-gray-700 to-gray-600 text-white p-4 rounded-2xl rounded-bl-lg self-start flex items-center space-x-3 shadow-lg max-w-[85%]">
+              <div className="bg-gray-800 text-white p-3 rounded-lg self-start flex items-center space-x-2">
                 <span>Processing</span>
                 <span className="flex space-x-1">
                   <span className="animate-pulse">.</span>
@@ -570,64 +540,63 @@ export default function Mri() {
         {/* Image preview for upload */}
         {previewImage && (
           <div className="relative self-start mb-4 w-full">
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-4 rounded-2xl border border-gray-600 shadow-xl">
-              <div className="flex items-center justify-between mb-3">
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-blue-400 font-bold">Ready to analyze MRI scan:</h3>
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                   <button 
                     onClick={toggleImageMinimize}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-600/50 rounded-lg transition-all"
-                    title={imageMinimized ? "Maximize" : "Minimize"}
+                    className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700"
+                    title={isImageMinimized ? "Maximize" : "Minimize"}
                   >
-                    {imageMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                    {isImageMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
                   </button>
                   <button 
                     onClick={removeImage}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-600/50 rounded-lg transition-all"
+                    className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700"
+                    title="Remove image"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               
-              {!imageMinimized && (
-                <div className="relative inline-block mb-3">
+              {!isImageMinimized && (
+                <div className="relative mb-3">
                   <img 
                     src={previewImage} 
                     alt="Preview" 
-                    className="max-h-64 rounded-xl border border-gray-600"
+                    className="max-h-64 rounded-lg border border-gray-600"
                   />
                 </div>
               )}
               
-              {imageMinimized && (
-                <div className="mb-3 p-3 bg-gray-900/50 rounded-lg">
+              {isImageMinimized && (
+                <div className="mb-3 p-2 bg-gray-700/50 rounded-lg">
                   <p className="text-gray-400 text-sm">Image ready for analysis (minimized)</p>
                 </div>
               )}
               
-              <div>
-                <button 
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-6 py-3 font-medium flex items-center transition-all duration-200 shadow-lg"
-                  onClick={handleUploadCT}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span>Analyzing...</span>
-                  ) : (
-                    <>
-                      <HeartPulse className="w-5 h-5 mr-2" />
-                      Analyze MRI Scan
-                    </>
-                  )}
-                </button>
-              </div>
+              <button 
+                className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 flex items-center w-full justify-center"
+                onClick={handleUploadCT}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span>Analyzing...</span>
+                ) : (
+                  <>
+                    <HeartPulse className="w-5 h-5 mr-2" />
+                    Analyze MRI Scan
+                  </>
+                )}
+              </button>
             </div>
           </div>
         )}
 
         {/* Input Area */}
-        <div className="relative bg-gray-800/80 backdrop-blur-xl text-white rounded-2xl px-4 py-3 pr-36 border border-gray-600/50 shadow-2xl">
+        <div className="relative bg-gray-800 text-white rounded-full px-4 py-3 pr-36 focus:outline-none focus:ring-2 focus:ring-blue-500">
           <input
             type="text"
             placeholder={analysisComplete 
@@ -654,7 +623,7 @@ export default function Mri() {
             />
             
             <button 
-              className="text-gray-400 hover:text-white w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-700/50 transition-all"
+              className="text-gray-400 hover:text-white w-7 h-7 flex items-center justify-center"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
               title="Upload MRI scan"
@@ -669,9 +638,9 @@ export default function Mri() {
             <button 
               className={`${
                 inputValue.trim() && analysisComplete 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg' 
+                  ? 'bg-blue-500 hover:bg-blue-600' 
                   : 'bg-gray-600 cursor-not-allowed'
-              } text-white rounded-full w-8 h-8 flex items-center justify-center transition-all`}
+              } text-white rounded-full w-8 h-8 flex items-center justify-center`}
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || !analysisComplete || isLoading}
               title={!analysisComplete ? "Upload and analyze a MRI scan first" : "Send message"}
@@ -686,12 +655,10 @@ export default function Mri() {
 
         {/* Instructions */}
         <div className="mt-4 text-center text-gray-400 text-sm">
-          <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl px-4 py-2 inline-block">
-            {!analysisComplete 
+          {!analysisComplete 
             ? "Step 1: Upload a MRI scan image using the upload button above"
-            : "Step 2: Ask questions about your CT analysis results"
+            : "Step 2: Ask questions about your MRI analysis results"
           }
-          </div>
         </div>
       </main>
     </div>
